@@ -1,0 +1,26 @@
+{
+  "name": "node-api",
+  "version": "1.0.0",
+  "main": "dist/api.js",
+  "scripts": {
+    "dev": "tsx --tsconfig tsconfig.json src/api.ts",
+    "build": "tsc",
+    "start": "node dist/api.js",
+    "load": "autocannon -m POST -c 100 -d 30 -R 1500 -H content-type=application/json -i payload.json http://localhost:3000/api/v1/grade",
+    "load-flask": "autocannon -m POST -c 100 -d 30 -R 1500 -H content-type=application/json -i payload.json http://localhost:5000/submissoes",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^2.2.0",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.8",
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.0.0",
+    "autocannon": "^8.0.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

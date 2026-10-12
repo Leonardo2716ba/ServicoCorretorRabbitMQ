@@ -1,0 +1,65 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    ports:
+      - "5672:5672"   # protocolo AMQP
+      - "15672:15672" # painel de gerenciamento (usuario/senha: guest/guest)
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  flask-api:
+    build: ./flask-api
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    volumes:
+      - resultados:/data/results
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  node-api:
+    build: ./node-api
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      PORT: "3000"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  worker:
+    build: ./worker
+    env_file:
+      - .env
+
+    volumes:
+      - resultados:/data/results
+      # socket do host: permite que o worker crie containers "irmaos"
+      # sem precisar de Docker-in-Docker
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      runner-sandbox:
+        condition: service_completed_successfully
+    # em producao, escale com: docker compose up --scale worker=3
+    deploy:
+      replicas: 1
+
+  runner-sandbox:
+    build:
+      context: ./runner-sandbox
+    image: runner-sandbox
+    restart: "no"
+    command: ["true"]
+
+volumes:
+  resultados:
