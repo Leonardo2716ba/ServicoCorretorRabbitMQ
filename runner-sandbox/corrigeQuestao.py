@@ -13,7 +13,7 @@ Pasta da entrega:
 - Estrutura da pasta: <home>/Entregas/A<id do aluno>/T<id da tarefa>/Q<id da questão>/E<id da entrega>
 '''
 
-import glob, os, sys, re, os.path, shutil, json, pathlib
+import glob, os, sys, re, os.path, shutil, json, pathlib, time
 import subprocess
 from unicodedata import normalize
 from fuzzywuzzy import fuzz
@@ -157,7 +157,7 @@ def run_with_limited_time(comm, nameIn, nameOut , time=6):
     return exec
 
 
-def scoreTestCase(caseNum, str_criterion, str_student):
+def scoreTestCase(caseNum, str_criterion, str_student, time):
     global resultado, questaoPath
     arq_criterion = open(str_criterion, 'r')
     arq_student = open(str_student, mode='r', encoding='utf-8', errors='ignore')
@@ -215,7 +215,8 @@ def scoreTestCase(caseNum, str_criterion, str_student):
                          'Erro': erro,
                          'Pontuacao': score,
                          'SaidaEsperada': saidas[0],
-                         'SaidaObtida': saidas[1] }
+                         'SaidaObtida': saidas[1],                         
+                         'TempoExecucao': time }
     resultado.addResultadoExecucao(resultadoExecucao)
     if TESTE: print(score)
 
@@ -384,12 +385,14 @@ def generateCorretion(questaoPath, entregaPath):
     for c in range(1, len(entradas)+1):
         if TESTE: print(f'Caso de teste {c}: ', end='')
         inputFile = f'{questaoPath}/entrada.{c}.txt'
+        start = time.perf_counter()
         tle = run_with_limited_time(f'{entregaPath}/correcao.py', inputFile, outputFile)
+        end = round(time.perf_counter() - start, 3)
         if (not tle):
             fileOutput = open(outputFile, 'w')
             fileOutput.write('\n\n\n\nTempo Limite Excedido')
             fileOutput.close()
-        scoreTestCase(c, inputFile.replace('entrada', 'criterios'), outputFile)
+        scoreTestCase(c, inputFile.replace('entrada', 'criterios'), outputFile, end)
         os.remove(outputFile)
 
 
@@ -720,6 +723,8 @@ if __name__ == '__main__':
     resultado = Correcao()
     processPyFile(entregaPath)
     ok, erros = checkRecursos()
+    #Iniciando o contador de tempo total de execucao
+    inicioTotal = time.perf_counter()
     if ok:
         generateCorretion(questaoPath, entregaPath)
     else:
@@ -733,6 +738,9 @@ if __name__ == '__main__':
                              'SaidaObtida': mensagem}
 
         resultado.addResultadoExecucao(resultadoExecucao)
+    
+    #Calculando o tempo total de execucao
+    resultado.resultado['TempoTotal'] = round(time.perf_counter() - inicioTotal, 3)
 
     resultado.salvar(entregaPath)
     os.remove(f'{entregaPath}/correcao.py')

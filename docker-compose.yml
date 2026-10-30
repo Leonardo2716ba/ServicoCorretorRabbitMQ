@@ -10,17 +10,17 @@ services:
       timeout: 5s
       retries: 5
 
-  flask-api:
-    build: ./flask-api
-    ports:
-      - "5000:5000"
-    env_file:
-      - .env
-    volumes:
-      - resultados:/data/results
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
+#  flask-api:
+#    build: ./flask-api
+#    ports:
+#      - "5000:5000"
+#    env_file:
+#      - .env
+#    volumes:
+#      - resultados:/data/results
+#    depends_on:
+#      rabbitmq:
+#        condition: service_healthy
 
   node-api:
     build: ./node-api
@@ -30,6 +30,9 @@ services:
       - .env
     environment:
       PORT: "3000"
+      OPCODERS_SERVER: http://host.docker.internal:3005/api/opcoders-sim
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -39,6 +42,8 @@ services:
     build: ./worker
     env_file:
       - .env
+    environment:
+      - PYTHONUNBUFFERED=1
 
     volumes:
       - resultados:/data/results

@@ -6,7 +6,14 @@ const RABBITMQ_URL = process.env.RABBITMQ_URL ?? 'amqp://localhost';
 
 const RABBITMQ_QUEUE_GRADING_REQUESTS =  process.env.RABBITMQ_QUEUE_GRADING_REQUESTS ?? 'grading.requests';
 const RABBITMQ_QUEUE_GRADING_RESULTS =  process.env.RABBITMQ_QUEUE_GRADING_RESULTS ?? 'grading.results';
+const OPCODERS_SERVER = process.env.OPCODERS_SERVER ?? "http://localhost:3005/api/opcoders-sim";
 
+const stats = {
+  submitted: 0,
+  completed: 0,
+  firstSubmitAt: null as number | null,
+  lastCompletedAt: null as number | null,
+};
 
 const server = express();
 server.use(express.json());
@@ -91,17 +98,50 @@ const connectRabbitMQ = async (): Promise<void> => {
     console.log('Connected to RabbitMQ');
 };
 
+async function checkResultQueue(): Promise<void> {
+  const connection = await amqp.connect(RABBITMQ_URL);
+  const channel = await connection.createChannel();
+
+  await channel.assertQueue(RABBITMQ_QUEUE_GRADING_RESULTS, { durable: true });
+  channel.prefetch(16);
+
+  await channel.consume(
+  RABBITMQ_QUEUE_GRADING_RESULTS,
+  async (message) => {
+    if (message === null) {
+      console.log("Consumidor cancelado pelo RabbitMQ.");
+      return;
+    }
+    try {
+      const respostaExterna = await fetch(OPCODERS_SERVER, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: message.content.toString(),
+      });
+
+      if (!respostaExterna.ok)
+        throw new Error(`Servidor respondeu com status ${respostaExterna.status}`);
+
+      channel.ack(message);
+      stats.completed++;
+      stats.lastCompletedAt = Date.now();
+    } catch (error) {
+      console.error("Erro ao processar resultado:", error);
+      channel.nack(message, false, true);
+    }
+  },
+  { noAck: false },
+);
+}
 
 const publishMessage = (queue: string, object: dataObject): boolean => {
     if (!channel) {
         console.error('Canal do RabbitMQ não está disponível.');
         return false;
     }
-
     try {
         const content = Buffer.from(JSON.stringify(object));
         const sent = channel.sendToQueue(queue, content, { persistent: true });
-        console.log(`Message sent to ${queue}:`, object);
         return sent;
     } catch (error) {
         console.error('Erro ao publicar mensagem:', error);
@@ -114,17 +154,28 @@ server.get('/', (request: Request, response: Response) => {
     return response.status(200).json({message: "O servidor node js está funcionando"})
 });
 
+server.get('/api/v1/stats', (_req, res) => res.json(stats));
+
+server.post('/api/v1/stats/reset', (_req, res) => {
+  stats.submitted = 0;
+  stats.completed = 0;
+  stats.firstSubmitAt = null;
+  stats.lastCompletedAt = null;
+  res.status(204).end();
+});
 
 server.post('/api/v1/grade',(request: Request, response: Response) => {
     const data: dataObject = request.body as dataObject
     const validation_result = dataValidation(data)
     
     if (!validation_result.success)
-        return response.status(400).json(validation_result.errors) 
+      return response.status(400).json(validation_result.errors) 
 
-    if (publishMessage(RABBITMQ_QUEUE_GRADING_REQUESTS, data))
-    return response.status(202).json({ message: 'Submissão enviada para correção.' });
-
+    if (publishMessage(RABBITMQ_QUEUE_GRADING_REQUESTS, data)){
+      stats.submitted++;
+      stats.firstSubmitAt ??= Date.now();
+      return response.status(202).json({ message: 'Submissão enviada para correção.' });
+    }
     return response.status(503).json({ message: 'Não foi possível enfileirar a submissão.' });
 });
 
@@ -134,3 +185,5 @@ connectRabbitMQ()
         console.error('Erro ao conectar o RabbitMQ', error);
         process.exit(1);
     });
+
+checkResultQueue();

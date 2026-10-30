@@ -1,11 +1,12 @@
 {
-  "id": 1,
   "task_delivered_id": 1,
   "question_score": 0.0,
+  "mem_limit": "64m",
+  "timeout_segundos": "2",
+  "correction_strategy_id": 1,
   "is_pending": true,
   "code_sent_2": "import random\nn = 1000\nvetor = list(range(n, 0, -1))\nrandom.shuffle(vetor)\ntrocas = 0\nfor i in range(len(vetor)):\n    for j in range(len(vetor) - i - 1):\n        if vetor[j] > vetor[j + 1]:\n            vetor[j], vetor[j + 1] = vetor[j + 1], vetor[j]\n            trocas += 1\nprint(f\"ordenado n={n} trocas={trocas} ok={vetor == sorted(vetor)}\")",
   "code_sent": "v = int(input())\nprint(f\"Hello World {v}\")\n",  
-  "correction_strategy_id": 1,
   "test_cases": [
     {
       "id": 1,
