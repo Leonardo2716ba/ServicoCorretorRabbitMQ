@@ -5,22 +5,25 @@ import exec from 'k6/execution';
 import { htmlReport } from "https://raw.githubusercontent.com/benc-uk/k6-reporter/main/dist/bundle.js";
 import { textSummary } from "https://jslib.k6.io/k6-summary/0.0.1/index.js";
 
-const BASE_URL = __ENV.BASE_URL || 'http://localhost:3000/api/v1/grade';
+//const BASE_URL = __ENV.BASE_URL || 'http://localhost:3000/api/v1/grade';
+const BASE_URL = 'http://192.168.31.70:3000/api/v1/grade';
 const START_ID = Number(__ENV.START_ID || 1);
 
 export const options = {
   scenarios: {
     breakpoint_rate: {
       executor: 'ramping-arrival-rate',
-      startRate: 100,
+      startRate: 3000,
       timeUnit: '1s',
       preAllocatedVUs: 500,
       maxVUs: 1000,
       stages: [
-        { duration: '1m', target: 500 },
-        { duration: '1m', target: 1000 },
-        { duration: '1m', target: 2000 },
-        { duration: '1m', target: 3000 },
+        //{ duration: '1m', target: 500 },
+        //{ duration: '1m', target: 1000 },
+        //{ duration: '1m', target: 2000 },
+        { duration: '3m', target: 4000 },
+	{ duration: '2m', target: 4100 },
+	{ duration: '2m', target: 4000 },
         //{ duration: '1m', target: 4000 },
         //{ duration: '1m', target: 5000 },
         //{ duration: '1m', target: 6000 },
@@ -28,7 +31,6 @@ export const options = {
         //{ duration: '1m', target: 8000 },
         //{ duration: '1m', target: 9000 },
         //{ duration: '1m', target: 10000 },
-        { duration: '1m', target: 0 },
       ],
     },
   },

@@ -311,7 +311,7 @@ def scoreFuncoes():
         testeFuncaoFile.close()
         os.chmod(f'{entregaPath}/testeFuncoes.py', 0o777)
         os.system(f'python -u "{entregaPath}"/testeFuncoes.py')
-        tle = run_with_limited_time(f'{entregaPath}/testeFuncoes.py', None, f'{entregaPath}/testeFuncoes.out', 300)
+        tle = run_with_limited_time(f'{entregaPath}/testeFuncoes.py', None, f'{entregaPath}/testeFuncoes.out', 100)
     if not parseOk:
         resultadoFuncao = {}
         resultadoFuncao['Nome'] = 'Erro fatal'
@@ -386,7 +386,7 @@ def generateCorretion(questaoPath, entregaPath):
         if TESTE: print(f'Caso de teste {c}: ', end='')
         inputFile = f'{questaoPath}/entrada.{c}.txt'
         start = time.perf_counter()
-        tle = run_with_limited_time(f'{entregaPath}/correcao.py', inputFile, outputFile)
+        tle = run_with_limited_time(f'{entregaPath}/correcao.py', inputFile, outputFile, time=EXECUTION_TIME_LIMIT_SECONDS)
         end = round(time.perf_counter() - start, 3)
         if (not tle):
             fileOutput = open(outputFile, 'w')
@@ -682,9 +682,11 @@ def checkRecursos():
         return False, visitor.erros
     return True, []
 
-
+EXECUTION_TIME_LIMIT_SECONDS=1
 if __name__ == '__main__':
     submissionPath = sys.argv[1] if len(sys.argv) > 1 else 'submission.json'
+    EXECUTION_TIME_LIMIT_SECONDS = float(sys.argv[2]) if len(sys.argv) > 2 else 2.0
+
     with open(submissionPath, 'r', encoding='utf-8') as f:
         submission = json.load(f)
 
