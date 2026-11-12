@@ -37,7 +37,7 @@ def container_runtime_seconds(payload: dict) -> io.BytesIO:
 
 def create_sandbox(payload: dict):
     mem_limit = payload.get("sandbox_mem_limit") or SANDBOX_DEFAULT_MEM_LIMIT
-    time_limit = payload.get("max_execution_time_seconds") or MAX_EXECUTION_TIME_SECONDS
+    time_limit = payload.get("test_case_time_limit_seconds") or MAX_EXECUTION_TIME_SECONDS
 
     container = docker_client.containers.create(
         image=SANDBOX_IMAGE,
@@ -185,8 +185,8 @@ def start_worker():
     channel.queue_declare(queue=RABBITMQ_QUEUE_GRADING_REQUESTS, durable=True)
     channel.queue_declare(queue=RABBITMQ_QUEUE_GRADING_RESULTS, durable=True)
 
-    # ACK automatico desabilitado + prefetch=4: pega quatro submissao por vez
-    channel.basic_qos(prefetch_count=4)
+    # ACK automatico desabilitado + prefetch=2: pega duas submissoes por vez
+    channel.basic_qos(prefetch_count=2)
     channel.basic_consume(queue=RABBITMQ_QUEUE_GRADING_REQUESTS, on_message_callback=handle_correction_request)
 
     print(" [*] Corretor aguardando submissoes. CTRL+C para sair.")

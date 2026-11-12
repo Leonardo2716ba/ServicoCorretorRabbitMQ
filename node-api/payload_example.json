@@ -3,10 +3,10 @@
   "question_score": 0.0,
   "sandbox_mem_limit": "64m",
   "timeout_segundos": "2",
-  "max_execution_time_seconds": 2,
   "correction_strategy_id": 1,
   "is_pending": true,
   "code_sent": "def lerNotas(msg):\n    partes = input(msg).split(',')\n    vetor = []\n    for i in range(len(partes)):\n        vetor.append(float(partes[i].strip()))\n    return vetor\n\ndef lerNomes(msg):\n    partes = input(msg).split(',')\n    vetor = []\n    for i in range(len(partes)):\n        vetor.append(partes[i].strip())\n    return vetor\n\ndef estatNotas(notas):\n    maior = notas[0]\n    menor = notas[0]\n    soma = 0.0\n    for i in range(len(notas)):\n        if notas[i] > maior:\n            maior = notas[i]\n        if notas[i] < menor:\n            menor = notas[i]\n        soma += notas[i]\n    return maior, menor, soma / len(notas)\n\ndef acimaMedia(notas, corte):\n    indices = []\n    for i in range(len(notas)):\n        if notas[i] > corte:\n            indices.append(i)\n    return indices\n\ndef exameEspecial(notas):\n    indices = []\n    for i in range(len(notas)):\n        if notas[i] >= 3.0 and notas[i] < 6.0:\n            indices.append(i)\n    return indices\n\nnotas = lerNotas('Digite as notas: ')\nnomes = lerNomes('Digite os nomes: ')\n\nmaior, menor, media = estatNotas(notas)\nprint(f'Maior nota: {maior:.1f}')\nprint(f'Menor nota: {menor:.1f}')\nprint(f'Nota média: {media:.1f}')\n\nprint('Notas acima da média:')\nacima = acimaMedia(notas, media)\nfor i in range(len(acima)):\n    k = acima[i]\n    print(f'- [{k}] = {notas[k]:.1f} ({nomes[k]})')\n\nprint('Notas em Exame Especial:')\nexame = exameEspecial(notas)\nfor i in range(len(exame)):\n    k = exame[i]\n    print(f'- [{k}] = {notas[k]:.1f} ({nomes[k]})')\n",
+  "test_case_time_limit_seconds": 2,
   "test_cases": [
     {
       "id": 1,
