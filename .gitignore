@@ -1,2 +1,5 @@
+flask-api/*
 node-api/node_modules
+api-tests/node_modules
+api-tests/*.html
 .env

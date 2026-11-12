@@ -1,23 +1,30 @@
 {
-  "id": 1,
   "task_delivered_id": 1,
   "question_score": 0.0,
-  "is_pending": true,
-  "code_sent_2": "import random\nn = 1000\nvetor = list(range(n, 0, -1))\nrandom.shuffle(vetor)\ntrocas = 0\nfor i in range(len(vetor)):\n    for j in range(len(vetor) - i - 1):\n        if vetor[j] > vetor[j + 1]:\n            vetor[j], vetor[j + 1] = vetor[j + 1], vetor[j]\n            trocas += 1\nprint(f\"ordenado n={n} trocas={trocas} ok={vetor == sorted(vetor)}\")",
-  "code_sent": "v = int(input())\nprint(f\"Hello World {v}\")\n",  
+  "sandbox_mem_limit": "64m",
+  "timeout_segundos": "2",
   "correction_strategy_id": 1,
+  "is_pending": true,
+  "code_sent": "def lerNotas(msg):\n    partes = input(msg).split(',')\n    vetor = []\n    for i in range(len(partes)):\n        vetor.append(float(partes[i].strip()))\n    return vetor\n\ndef lerNomes(msg):\n    partes = input(msg).split(',')\n    vetor = []\n    for i in range(len(partes)):\n        vetor.append(partes[i].strip())\n    return vetor\n\ndef estatNotas(notas):\n    maior = notas[0]\n    menor = notas[0]\n    soma = 0.0\n    for i in range(len(notas)):\n        if notas[i] > maior:\n            maior = notas[i]\n        if notas[i] < menor:\n            menor = notas[i]\n        soma += notas[i]\n    return maior, menor, soma / len(notas)\n\ndef acimaMedia(notas, corte):\n    indices = []\n    for i in range(len(notas)):\n        if notas[i] > corte:\n            indices.append(i)\n    return indices\n\ndef exameEspecial(notas):\n    indices = []\n    for i in range(len(notas)):\n        if notas[i] >= 3.0 and notas[i] < 6.0:\n            indices.append(i)\n    return indices\n\nnotas = lerNotas('Digite as notas: ')\nnomes = lerNomes('Digite os nomes: ')\n\nmaior, menor, media = estatNotas(notas)\nprint(f'Maior nota: {maior:.1f}')\nprint(f'Menor nota: {menor:.1f}')\nprint(f'Nota média: {media:.1f}')\n\nprint('Notas acima da média:')\nacima = acimaMedia(notas, media)\nfor i in range(len(acima)):\n    k = acima[i]\n    print(f'- [{k}] = {notas[k]:.1f} ({nomes[k]})')\n\nprint('Notas em Exame Especial:')\nexame = exameEspecial(notas)\nfor i in range(len(exame)):\n    k = exame[i]\n    print(f'- [{k}] = {notas[k]:.1f} ({nomes[k]})')\n",
+  "test_case_time_limit_seconds": 2,
   "test_cases": [
     {
       "id": 1,
-      "criterion": "1\n2 1\nHello World||10.0",
-      "input": "5\n",
-      "output": "5\nHello World 5\n"
+      "criterion": "5\n3 1\nMaior nota: 10.0||2.0\n4 1\nMenor nota: 10.0||2.0\n5 1\nNota média: 10.0||2.0\n6 1\nNotas acima da média:||2.0\n7 1\nNotas em Exame Especial:||2.0",
+      "input": "10\nJoão\n",
+      "output": "Digite as notas: 10\nDigite os nomes: João\nMaior nota: 10.0\nMenor nota: 10.0\nNota média: 10.0\nNotas acima da média:\nNotas em Exame Especial:\n"
     },
     {
       "id": 2,
-      "criterion": "1\n2 1\nBello World||10.0",
-      "input": "5\n",
-      "output": "5\nBello World fdfd5\n"
+      "criterion": "12\n3 1\nMaior nota: 8.0||0.8333\n4 1\nMenor nota: 1.0||0.8333\n5 1\nNota média: 4.5||0.8333\n6 1\nNotas acima da média:||0.8333\n7 1\n- [4] = 5.0 (Cândida)||0.8333\n8 1\n- [5] = 6.0 (Catifunda)||0.8333\n9 1\n- [6] = 7.0 (Capitu)||0.8333\n10 1\n- [7] = 8.0 (Ptolomeu)||0.8333\n11 1\nNotas em Exame Especial:||0.8333\n12 1\n- [2] = 3.0 (Boneco)||0.8333\n13 1\n- [3] = 4.0 (Zé)||0.8333\n14 1\n- [4] = 5.0 (Cândida)||0.8333",
+      "input": "1, 2, 3, 4, 5, 6, 7, 8\nBaltazar, Rolando, Boneco, Zé, Cândida, Catifunda, Capitu, Ptolomeu\n",
+      "output": "Digite as notas: 1, 2, 3, 4, 5, 6, 7, 8\nDigite os nomes: Baltazar, Rolando, Boneco, Zé, Cândida, Catifunda, Capitu, Ptolomeu\nMaior nota: 8.0\nMenor nota: 1.0\nNota média: 4.5\nNotas acima da média:\n- [4] = 5.0 (Cândida)\n- [5] = 6.0 (Catifunda)\n- [6] = 7.0 (Capitu)\n- [7] = 8.0 (Ptolomeu)\nNotas em Exame Especial:\n- [2] = 3.0 (Boneco)\n- [3] = 4.0 (Zé)\n- [4] = 5.0 (Cândida)\n"
+    },
+    {
+      "id": 3,
+      "criterion": "9\n3 1\nMaior nota: 10.0||1.1111\n4 1\nMenor nota: 3.6||1.1111\n5 1\nNota média: 8.0||1.1111\n6 1\nNotas acima da média:||1.1111\n7 1\n- [0] = 10.0 (Batman)||1.1111\n8 1\n- [2] = 9.9 (Sparrow)||1.1111\n9 1\n- [3] = 8.8 (Smeagol)||1.1111\n10 1\nNotas em Exame Especial:||1.1111\n11 1\n- [1] = 3.6 (Coringa)||1.1111",
+      "input": "10, 3.56, 9.9, 8.85, 7.45\nBatman, Coringa, Sparrow, Smeagol, Chaves\n",
+      "output": "Digite as notas: 10, 3.56, 9.9, 8.85, 7.45\nDigite os nomes: Batman, Coringa, Sparrow, Smeagol, Chaves\nMaior nota: 10.0\nMenor nota: 3.6\nNota média: 8.0\nNotas acima da média:\n- [0] = 10.0 (Batman)\n- [2] = 9.9 (Sparrow)\n- [3] = 8.8 (Smeagol)\nNotas em Exame Especial:\n- [1] = 3.6 (Coringa)\n"
     }
   ]
 }

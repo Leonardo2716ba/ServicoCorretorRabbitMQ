@@ -13,7 +13,7 @@ Pasta da entrega:
 - Estrutura da pasta: <home>/Entregas/A<id do aluno>/T<id da tarefa>/Q<id da questão>/E<id da entrega>
 '''
 
-import glob, os, sys, re, os.path, shutil, json, pathlib
+import glob, os, sys, re, os.path, shutil, json, pathlib, time
 import subprocess
 from unicodedata import normalize
 from fuzzywuzzy import fuzz
@@ -157,7 +157,7 @@ def run_with_limited_time(comm, nameIn, nameOut , time=6):
     return exec
 
 
-def scoreTestCase(caseNum, str_criterion, str_student):
+def scoreTestCase(caseNum, str_criterion, str_student, time):
     global resultado, questaoPath
     arq_criterion = open(str_criterion, 'r')
     arq_student = open(str_student, mode='r', encoding='utf-8', errors='ignore')
@@ -215,7 +215,8 @@ def scoreTestCase(caseNum, str_criterion, str_student):
                          'Erro': erro,
                          'Pontuacao': score,
                          'SaidaEsperada': saidas[0],
-                         'SaidaObtida': saidas[1] }
+                         'SaidaObtida': saidas[1],                         
+                         'TempoExecucao': time }
     resultado.addResultadoExecucao(resultadoExecucao)
     if TESTE: print(score)
 
@@ -310,7 +311,7 @@ def scoreFuncoes():
         testeFuncaoFile.close()
         os.chmod(f'{entregaPath}/testeFuncoes.py', 0o777)
         os.system(f'python -u "{entregaPath}"/testeFuncoes.py')
-        tle = run_with_limited_time(f'{entregaPath}/testeFuncoes.py', None, f'{entregaPath}/testeFuncoes.out', 300)
+        tle = run_with_limited_time(f'{entregaPath}/testeFuncoes.py', None, f'{entregaPath}/testeFuncoes.out', 100)
     if not parseOk:
         resultadoFuncao = {}
         resultadoFuncao['Nome'] = 'Erro fatal'
@@ -384,12 +385,14 @@ def generateCorretion(questaoPath, entregaPath):
     for c in range(1, len(entradas)+1):
         if TESTE: print(f'Caso de teste {c}: ', end='')
         inputFile = f'{questaoPath}/entrada.{c}.txt'
-        tle = run_with_limited_time(f'{entregaPath}/correcao.py', inputFile, outputFile)
+        start = time.perf_counter()
+        tle = run_with_limited_time(f'{entregaPath}/correcao.py', inputFile, outputFile, time=EXECUTION_TIME_LIMIT_SECONDS)
+        end = round(time.perf_counter() - start, 3)
         if (not tle):
             fileOutput = open(outputFile, 'w')
             fileOutput.write('\n\n\n\nTempo Limite Excedido')
             fileOutput.close()
-        scoreTestCase(c, inputFile.replace('entrada', 'criterios'), outputFile)
+        scoreTestCase(c, inputFile.replace('entrada', 'criterios'), outputFile, end)
         os.remove(outputFile)
 
 
@@ -679,9 +682,11 @@ def checkRecursos():
         return False, visitor.erros
     return True, []
 
-
+EXECUTION_TIME_LIMIT_SECONDS=1
 if __name__ == '__main__':
     submissionPath = sys.argv[1] if len(sys.argv) > 1 else 'submission.json'
+    EXECUTION_TIME_LIMIT_SECONDS = float(sys.argv[2]) if len(sys.argv) > 2 else 2.0
+
     with open(submissionPath, 'r', encoding='utf-8') as f:
         submission = json.load(f)
 
@@ -720,6 +725,8 @@ if __name__ == '__main__':
     resultado = Correcao()
     processPyFile(entregaPath)
     ok, erros = checkRecursos()
+    #Iniciando o contador de tempo total de execucao
+    inicioTotal = time.perf_counter()
     if ok:
         generateCorretion(questaoPath, entregaPath)
     else:
@@ -733,6 +740,9 @@ if __name__ == '__main__':
                              'SaidaObtida': mensagem}
 
         resultado.addResultadoExecucao(resultadoExecucao)
+    
+    #Calculando o tempo total de execucao
+    resultado.resultado['TempoTotal'] = round(time.perf_counter() - inicioTotal, 3)
 
     resultado.salvar(entregaPath)
     os.remove(f'{entregaPath}/correcao.py')
