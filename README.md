@@ -1,66 +1,54 @@
-# ServicoCorretorRabbitMQ
+# Serviço Corretor
 
-Ambiente mínimo com **3 componentes**, seguindo o fluxo do seu TCC, mas sem a etapa de
-banco de dados de questões (MongoDB entra depois):
+Sistema distribuído de correção automática de código, parte do opCoders Judge. Recebe submissões por uma API HTTP, enfileira no RabbitMQ, executa cada uma em um container Docker isolado e entrega o resultado ao servidor do opCoders.
 
-- **rabbitmq** — broker de mensagens (fila `submissoes`)
-- **flask-api** — recebe submissões (`POST /submissoes`) e publica na fila; consulta
-  resultados (`GET /submissoes/<id>`)
-- **corretor** — consome a fila com ACK manual, executa o código em um container
-  Docker isolado (limite de memória/CPU, sem rede) e grava o resultado
+Hoje o corretor avalia submissões em **Python** (sem etapa de compilação).
 
-## Como rodar
+## Visão geral
+
+```mermaid
+flowchart LR
+  C[Cliente/Servidor opCoders] -->|POST /api/v1/grade| API[API Node.js]
+  API -->|grading.requests| MQ[(RabbitMQ)]
+  MQ --> W[Workers Python]
+  W -->|cria e remove| S[Sandbox Docker]
+  W -->|grading.results| MQ
+  MQ --> API
+  API -->|POST resultado| C[Cliente/Servidor opCoders]
+```
+
+## Início rápido
 
 ```bash
-cd workqueue-test
+cp .env.example .env                       # ajuste os valores
+docker build -t runner-sandbox ./runner-sandbox
 docker compose up --build
+curl http://localhost:3000/                # {"message":"O servidor node js está funcionando"}
 ```
 
-Isso sobe RabbitMQ (com painel em http://localhost:15672, usuário/senha
-`guest`/`guest`), a API em `http://localhost:5000` e um corretor.
+O worker cria os sandboxes a partir da imagem `runner-sandbox`, então ela precisa existir no host antes de subir os workers.
 
-Para simular múltiplos corretores concorrentes (como no diagrama do TCC):
+**A confirmar:** nomes dos serviços e arquivos do compose no seu repositório.
 
-```bash
-docker compose up --build --scale corretor=3
-docker compose exec flask-api sh -c "rm -f /data/results/*.json"
+## Documentação
+
+| Documento | Para quê |
+|---|---|
+| [docs/arquitetura.md](docs/arquitetura.md) | Componentes, fluxo de uma submissão, filas e garantias de entrega |
+| [docs/api.md](docs/api.md) | Endpoints HTTP, payload de submissão e formato do resultado |
+| [docs/worker.md](docs/worker.md) | Módulos do worker, ciclo de vida da mensagem (ack/nack) e escalabilidade |
+| [docs/sandbox.md](docs/sandbox.md) | Imagem `runner-sandbox`, limites de recursos, vereditos e limitações |
+| [docs/configuracao.md](docs/configuracao.md) | Variáveis de ambiente de cada serviço |
+<!--| [docs/testes-de-desempenho.md](docs/testes-de-desempenho.md) | Teste de makespan e teste de rampa com k6 |-->
+| [docs/operacao.md](docs/operacao.md) | Subir, escalar, limpar filas, rede e solução de problemas |
+
+## Estrutura do repositório
+
 ```
-
-## Testando o fluxo
-
-**1. Enviar uma submissão:**
-
-```bash
-curl -X POST http://localhost:5000/submissoes \
-  -H "Content-Type: application/json" \
-  -d '{
-    "codigo": "import random\n
-    n = 1000\n
-    vetor = list(range(n, 0, -1))\n
-    trocas = 0\n
-    for i in range(len(vetor)):
-    \n    for j in range(len(vetor) - i - 1):
-    \n        if vetor[j] > vetor[j + 1]:
-    \n            vetor[j], vetor[j + 1] = vetor[j + 1], vetor[j]
-    \n            trocas += 1\n
-    print(f\"ordenado n={n} trocas={trocas} ok={vetor == sorted(vetor)}\")",
-    "id_questao": "q1",
-    "id_aluno": "aluno123"
-  }'
+.
+├── node-api/         # API Node.js (ajuste o nome da pasta)
+├── worker/           # consumidor Python: config, messaging, grading, sandbox, worker
+├── runner-sandbox/   # imagem que executa o código do aluno
+├── docs/             # documentação por responsabilidade
+└── .env.example
 ```
-
-Depois de `TIMEOUT_SEGUNDOS` (padrão 5s), o resultado deve vir com
-`"veredito": "tempo_limite_excedido"`.
-
-## Observações técnicas
-
-- O corretor monta `/var/run/docker.sock` do host, então ele cria containers
-  **irmãos** (sibling containers) via `docker-py`, sem precisar de
-  Docker-in-Docker.
-- Ele usa `python:3.11-slim` para rodar o código do aluno — na primeira
-  execução o Docker vai baixar essa imagem, o que pode levar alguns segundos.
-- Limites configuráveis via variáveis de ambiente no `docker-compose.yml`:
-  `TIMEOUT_SEGUNDOS`, `MEM_LIMIT`, `CPU_QUOTA`.
-- Consumo com ACK manual (`prefetch_count=1`): se o corretor cair no meio do
-  processamento, a mensagem não é confirmada e volta para a fila — igual ao
-  que está descrito na Seção 3.1 do seu texto.
