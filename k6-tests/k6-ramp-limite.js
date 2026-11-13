@@ -18,13 +18,13 @@ import http from 'k6/http';
 import exec from 'k6/execution';
 
 // ---------- parametros (via -e NOME=valor) ----------
-const API_URL = __ENV.API_URL || 'http://localhost:3000';
+const API_URL = __ENV.API_URL || 'http://192.168.31.52:3000';
 const REP = __ENV.REP || '1'; // numero da repeticao (so identifica o CSV)
 const OUT_DIR = __ENV.OUT_DIR || 'resultados';
 const TAXA_MAX = Number(__ENV.TAXA_MAX || 10000);
-const PASSO = Number(__ENV.PASSO || 1000);
-const RAMPA_S = Number(__ENV.RAMPA_S || 5); // tempo para subir ate o degrau
-const PATAMAR_S = Number(__ENV.PATAMAR_S || 25); // tempo segurando o degrau (medido)
+const PASSO = Number(__ENV.PASSO || 200);
+const RAMPA_S = Number(__ENV.RAMPA_S || 10); // tempo para subir ate o degrau
+const PATAMAR_S = Number(__ENV.PATAMAR_S || 20); // tempo segurando o degrau (medido)
 const PRE_VUS = Number(__ENV.PRE_VUS || 1000);
 const MAX_VUS = Number(__ENV.MAX_VUS || 1000);
 const TIMEOUT_S = Number(__ENV.TIMEOUT_S || 10);
@@ -76,7 +76,9 @@ export const options = {
 
 // ---------- requisicao ----------
 // Objeto reaproveitado em cada VU: somente o ID muda a cada iteração
-const corpo = {
+const corpo = JSON.parse(open('./payload.json'));
+
+const corpo_2 = {
   task_delivered_id: 0,
   correction_strategy_id: 1,
   question_score: 10,

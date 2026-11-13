@@ -1,0 +1,17 @@
+{
+  "task_delivered_id": 1,
+  "question_score": 0.0,
+  "mem_limit": "32m",
+  "test_case_time_limit_seconds": "2",
+  "correction_strategy_id": 1,
+  "is_pending": true,
+  "code_sent": "n = 1000\nvetor = []\nx = 12345\nfor i in range(n):\n    x = (x * 1103515245 + 12345) % 2147483648\n    vetor.append(x % 10000)\n\nsoma_antes = 0\nfor i in range(n):\n    soma_antes = soma_antes + vetor[i]\n\ntrocas = 0\nfor i in range(n):\n    for j in range(n - i - 1):\n        if vetor[j] > vetor[j + 1]:\n            aux = vetor[j]\n            vetor[j] = vetor[j + 1]\n            vetor[j + 1] = aux\n            trocas = trocas + 1\n\nordenado = 'sim'\nsoma_depois = 0\nfor i in range(n):\n    soma_depois = soma_depois + vetor[i]\n    if i < n - 1:\n        if vetor[i] > vetor[i + 1]:\n            ordenado = 'nao'\n\nprint(f'ordenado={ordenado} trocas={trocas} soma={soma_depois}')\n",
+  "test_cases": [
+    {
+      "id": 1,
+      "criterion": "1\n1 3\nordenado=sim||4.0\ntrocas=247629||3.0\nsoma=4969660||3.0",
+      "input": "",
+      "output": "ordenado=sim trocas=247629 soma=4969660\n"
+    }
+  ]
+}
