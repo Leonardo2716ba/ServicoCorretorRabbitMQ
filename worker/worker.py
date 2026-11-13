@@ -1,18 +1,19 @@
 import os, io, json, time, tarfile, requests
 import pika
 import docker
+import config
 
-SANDBOX_IMAGE = os.environ.get("SANDBOX_IMAGE", "runner-sandbox")
-SANDBOX_DEFAULT_MEM_LIMIT = os.environ.get("SANDBOX_DEFAULT_MEM_LIMIT", "64m")
-SANDBOX_CPU_QUOTA = int(os.environ.get("SANDBOX_CPU_QUOTA", "50000"))  # cpu_period padrao = 100000 # Equivale a 100%
-SANDBOX_MAX_TIME_LIMIT_SECONDS = int(os.environ.get("SANDBOX_MAX_TIME_LIMIT_SECONDS"))
+SANDBOX_IMAGE = os.getenv("SANDBOX_IMAGE", "runner-sandbox")
+SANDBOX_DEFAULT_MEM_LIMIT = os.getenv("SANDBOX_DEFAULT_MEM_LIMIT", "64m")
+SANDBOX_CPU_QUOTA = int(os.getenv("SANDBOX_CPU_QUOTA", "50000"))  # cpu_period padrao = 100000 # Equivale a 100%
+SANDBOX_MAX_TIME_LIMIT_SECONDS = int(os.getenv("SANDBOX_MAX_TIME_LIMIT_SECONDS"))
 
-RABBITMQ_HOST = os.environ.get("RABBITMQ_HOST", "rabbitmq")
-RABBITMQ_QUEUE_GRADING_REQUESTS = os.environ.get("RABBITMQ_QUEUE_GRADING_REQUESTS", "grading.requests")
-RABBITMQ_QUEUE_GRADING_RESULTS = os.environ.get("RABBITMQ_QUEUE_GRADING_RESULTS", "grading.results")
+RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "rabbitmq")
+RABBITMQ_QUEUE_GRADING_REQUESTS = os.getenv("RABBITMQ_QUEUE_GRADING_REQUESTS", "grading.requests")
+RABBITMQ_QUEUE_GRADING_RESULTS = os.getenv("RABBITMQ_QUEUE_GRADING_RESULTS", "grading.results")
 
 MAX_EXECUTION_TIME_SECONDS="2"
-RESULTS_DIR = os.environ.get("RESULTS_DIR", "/data/results")
+RESULTS_DIR = os.getenv("RESULTS_DIR", "/data/results")
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
 docker_client = docker.from_env()
