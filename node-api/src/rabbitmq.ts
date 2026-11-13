@@ -40,7 +40,7 @@ export async function checkResultQueue(): Promise<void> {
         const resultado = JSON.parse(conteudo);
 
           //const respostaExterna = await fetch(OPCODERS_SERVER,
-          const respostaExterna = await fetch("http://192.168.31.70:3000/api/v1/ultima", {
+          const respostaExterna = await fetch("http://192.168.31.52:3000/api/v1/ultima", {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: conteudo,

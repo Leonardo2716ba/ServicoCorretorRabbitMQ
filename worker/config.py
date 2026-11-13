@@ -1,0 +1,21 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+SANDBOX_IMAGE = os.getenv("SANDBOX_IMAGE", "runner-sandbox")
+SANDBOX_DEFAULT_MEM_LIMIT = os.getenv("SANDBOX_DEFAULT_MEM_LIMIT", "32m")
+SANDBOX_MAX_TIME_LIMIT_SECONDS = int(
+    os.getenv("SANDBOX_MAX_TIME_LIMIT_SECONDS", "2")
+)
+SANDBOX_CPU_QUOTA = int(os.getenv("SANDBOX_CPU_QUOTA", "90000"))
+
+RABBITMQ_URL = os.getenv("RABBITMQ_URL")
+RABBITMQ_QUEUE_GRADING_REQUESTS = os.getenv(
+    "RABBITMQ_QUEUE_GRADING_REQUESTS"
+)
+RABBITMQ_QUEUE_GRADING_RESULTS = os.getenv(
+    "RABBITMQ_QUEUE_GRADING_RESULTS"
+)
+
+RESULTS_DIR = os.getenv("RESULTS_DIR", "/data/results")
