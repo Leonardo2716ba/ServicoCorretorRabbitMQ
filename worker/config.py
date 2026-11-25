@@ -18,7 +18,7 @@ SANDBOX_DEFAULT_MEM_LIMIT = os.getenv("SANDBOX_DEFAULT_MEM_LIMIT", "32m")
 # tempo maximo que o worker espera o container terminar
 SANDBOX_MAX_TIME_LIMIT_SECONDS = int(os.getenv("SANDBOX_MAX_TIME_LIMIT_SECONDS", "2"))
 SANDBOX_CPU_PERIOD = 100000
-SANDBOX_CPU_QUOTA = int(os.getenv("SANDBOX_CPU_QUOTA", "90000"))  # 90000 / 100000 = 90% de um core
+SANDBOX_CPU_QUOTA = int(os.getenv("SANDBOX_CPU_QUOTA", "80000"))  # 90000 / 100000 = 90% de um core
 SANDBOX_PIDS_LIMIT = int(os.getenv("SANDBOX_PIDS_LIMIT", "64"))
 # tempo por caso de teste quando a submissao nao informa
 DEFAULT_TEST_CASE_TIME_LIMIT_SECONDS = os.getenv("DEFAULT_TEST_CASE_TIME_LIMIT_SECONDS", "2")

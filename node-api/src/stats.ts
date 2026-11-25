@@ -4,6 +4,7 @@ export interface ResultEntry {
   container_runtime_seconds: number;
   completedAt: number;
   question_score: number;
+  expected_status: string;
 }
 
 export const stats = {
@@ -21,6 +22,3 @@ export function resetStats(): void {
   stats.lastCompletedAt = null;
   stats.results = [];
 }
-
-
-

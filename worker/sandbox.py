@@ -84,12 +84,26 @@ def _wait_and_classify(container) -> SandboxResult:
         resultado_wait = container.wait(timeout=config.SANDBOX_MAX_TIME_LIMIT_SECONDS)
     except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
         try:
-            container.kill()
-        except Exception:
-            pass
-        return SandboxResult(
-            TEMPO_LIMITE_CONTAINER_EXCEDIDO, "Tempo limite de execucao do container excedido."
-        )
+            container.reload()
+            state = container.attrs.get("State", {})
+        except Exception as exc:
+            return SandboxResult(
+                ERRO_INFRAESTRUTURA, f"Falha ao consultar o estado do container: {exc}"
+            )
+
+        if state.get("Status") not in ("exited", "dead"):
+            # ainda em execucao (ou nao terminou): timeout de verdade
+            try:
+                container.kill()
+            except Exception:
+                pass
+            return SandboxResult(
+                TEMPO_LIMITE_CONTAINER_EXCEDIDO,
+                "Tempo limite de execucao do container excedido.",
+            )
+
+        # ja terminou: segue para a classificacao normal
+        resultado_wait = {"StatusCode": state.get("ExitCode", -1)}
 
     status_code = resultado_wait.get("StatusCode", -1)
     logs = container.logs(tail=LOG_TAIL_LINES).decode("utf-8", errors="replace")[:LOG_MAX_CHARS]
@@ -103,6 +117,7 @@ def _wait_and_classify(container) -> SandboxResult:
         "oom_killed": oom_killed,
         "exit_code": state.get("ExitCode"),
         "error": state.get("Error"),
+        "started_at": state.get("StartedAt"),
         "finished_at": state.get("FinishedAt"),
     })
 
@@ -130,8 +145,6 @@ def run_in_sandbox(payload: dict) -> SandboxResult:
     container = None
     try:
         container = _create_container(payload)
-        # put_archive/start ficam depois da atribuicao: se falharem, o finally
-        # ainda enxerga o container e remove (antes ele vazava)
         container.put_archive("/app", _build_submission_tar(payload))
         container.start()
         return _wait_and_classify(container)
