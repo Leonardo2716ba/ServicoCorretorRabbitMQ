@@ -1,3 +1,4 @@
+name: opjudge
 services:
   rabbitmq:
     image: rabbitmq:3.13-management
@@ -10,18 +11,6 @@ services:
       timeout: 5s
       retries: 5
 
-#  flask-api:
-#    build: ./flask-api
-#    ports:
-#      - "5000:5000"
-#    env_file:
-#      - .env
-#    volumes:
-#      - resultados:/data/results
-#    depends_on:
-#      rabbitmq:
-#        condition: service_healthy
-
   node-api:
     build: ./node-api
     ports:
@@ -30,7 +19,7 @@ services:
       - .env
     environment:
       PORT: "3000"
-      OPCODERS_SERVER: http://host.docker.internal:3005/api/opcoders-sim
+#      OPCODERS_SERVER: http://host.docker.internal:3005/api/opcoders-sim
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
