@@ -59,6 +59,7 @@ export async function checkResultQueue(): Promise<void> {
         stats.results.push({
           task_delivered_id: resultado.task_delivered_id,
           execution_status: resultado.execution_status,
+          expected_status: resultado.expected_status,
           container_runtime_seconds: resultado.container_runtime_seconds,
           question_score: resultado.question_score,
           completedAt: now,

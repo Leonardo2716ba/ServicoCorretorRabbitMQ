@@ -39,8 +39,8 @@ O worker cria os sandboxes a partir da imagem `runner-sandbox`, então ela preci
 | [docs/worker.md](docs/worker.md) | Módulos do worker, ciclo de vida da mensagem (ack/nack) e escalabilidade |
 | [docs/sandbox.md](docs/sandbox.md) | Imagem `runner-sandbox`, limites de recursos, vereditos e limitações |
 | [docs/configuracao.md](docs/configuracao.md) | Variáveis de ambiente de cada serviço |
-<!--| [docs/testes-de-desempenho.md](docs/testes-de-desempenho.md) | Teste de makespan e teste de rampa com k6 |-->
 | [docs/operacao.md](docs/operacao.md) | Subir, escalar, limpar filas, rede e solução de problemas |
+<!--| [docs/testes-de-desempenho.md](docs/testes-de-desempenho.md) | Teste de makespan e teste de rampa com k6 |-->
 
 ## Estrutura do repositório
 

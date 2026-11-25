@@ -26,6 +26,7 @@ def grade_submission(payload: dict) -> dict:
     return {
         **payload,
         "execution_status": sandbox.status,
+        "expected_status": payload.get("expected_status","nao encontrado"),
         "question_score": question_score,
         "report": report,
         "container_runtime_seconds": round(time.time() - inicio, 3),
